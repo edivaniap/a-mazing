@@ -142,14 +142,14 @@ public:
 		m_maze[pos.x][pos.y] = m_map.marker;
 	}
 
-	/*! desmarca posição visitada */
+	/*! desmarca visita de uma posição */
 	void unmark_cell( const Position& pos )
 	{
 		if( is_marked(pos) )
 			m_maze[pos.x][pos.y] = m_map.way;
 	}
 
-	/*! verifica se posição está marcada */
+	/*! verifica se posição está marcada como visitada */
 	bool is_marked(const Position& pos)
 	{
 		return ( m_maze[pos.x][pos.y] == m_map.marker );
