@@ -3,6 +3,7 @@
 #include <stack>
 #include <string>
 #include <fstream>
+#include <cassert>
 
 class Maze
 {
@@ -10,8 +11,14 @@ public:
 	/*! estrutura de uma posição */
 	struct Position
 	{
-		int x; /*<! linha da posição */
-		int y; /*<! coluna da posição */
+		size_t x; /*<! linha da posição */
+		size_t y; /*<! coluna da posição */
+
+		void set( size_t x_, size_t y_ )
+		{
+			x = x_;
+			y = y_;
+		}
 	};
 
 	/*! enumeração de direções 
@@ -52,8 +59,7 @@ public:
 	{
 		m_nrow = 0;
 		m_ncol = 0;
-		m_initial.x = 0;
-		m_initial.y = 0;
+		m_initial.set(0, 0);
 	}
 
 	/*! 
@@ -77,22 +83,17 @@ public:
 
 	    std::cout << "\t>>> Arquivo lido com sucesso!\n\n";
 
-    	m_map.wall = ifs.get();
-	    
-    	m_map.actor = ifs.get();
-	    
+    	m_map.wall = ifs.get();	    
+    	m_map.actor = ifs.get();	    
     	m_map.out = ifs.get();
-
     	m_map.marker = ifs.get();
 
     	while( ! ifs.eof() )
     	{
     		std::string line;
-
     		getline ( ifs, line );  //ler linha
 
-    		//std::cout << "linha lida: "<< line<< "\n";
-    		
+    		std::cout << "linha lida: "<< line<< "\n";    		
     		m_maze.push_back( line ); //insere string lida no vector
        	}
 
@@ -111,6 +112,11 @@ public:
 	 */
 	Position get_start_position( void )
 	{
+		for( auto i = 0u; i < m_nrow; i++)
+			for( auto j = 0u; j < m_ncol; j++)
+				if( m_maze[i][j] == m_map.actor )
+					m_initial.set(i, j);
+
 		return m_initial;
 	}
 
@@ -183,6 +189,14 @@ int main(int argc, char const *argv[])
 	}
 
 	labirinto.render();
+
+	Maze::Position pos_i = labirinto.get_start_position();
+
+	std::cout << "Posição inicial do ator: (" << pos_i.x << ", " << pos_i.y << ")\n";
+
+	/* asserts */
+	assert( pos_i.x == 6 );
+	assert( pos_i.y == 7 );
 
 	return 0;
 }
