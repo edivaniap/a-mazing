@@ -14,6 +14,13 @@ public:
 		size_t x; /*<! linha da posição */
 		size_t y; /*<! coluna da posição */
 
+		/*! inicializador */
+		Position( size_t x_=0, size_t y_=0 ) 
+			: x(x_)
+			, y(y_)
+		{ /*empty*/ }
+
+		/*! configurador */
 		void set( size_t x_, size_t y_ )
 		{
 			x = x_;
@@ -30,11 +37,20 @@ public:
 	*/
 	enum Direction
 	{
-		/*NORTH = 0, //<! ( 0,  1)
-		SOUTH = 1, //<! ( 0, -1)
-		WEST = 2,  //<! (-1,  0)
-		EAST = 3;  //<! ( 1,  0)*/
+		NORTH = 0, //<! (-1, 0)
+		SOUTH = 1, //<! ( 1, 0)
+		WEST = 2,  //<! ( 0,-1)
+		EAST = 3   //<! ( 0, 1)
 	};
+
+	/*! estrutura de uma direção 
+	static struct Direction
+	{
+		Position north(0, 1);
+		Position south(0,-1);
+		Position west(-1,0);
+		Position east( 1,0);
+	};*/
 
 	/*! estrutura que vai definir o significado de cada caracter no mapa/labirinto */
 	struct Map
@@ -48,11 +64,11 @@ public:
 
 private:
 	//std::vector< std::vector< char > > m_maze;
-	std::vector< std::string > m_maze;
-	size_t m_nrow; //numero linha
-	size_t m_ncol; //numero coluna
-	Position m_initial; //posição inicial
-	Map m_map;
+	std::vector< std::string > m_maze; /*<! matriz labirinto */ 
+	size_t m_nrow; /*<! número de linhas do labirinto */
+	size_t m_ncol; /*<! número de colunas do labirinto */
+	Position m_initial; /*<! número de linhas do labirinto */ /////////TALVEZ NAO SEJA NECESSÁRIO
+	Map m_map; /*<! legenda de caracteres */
 
 public:
 	Maze()
@@ -91,9 +107,7 @@ public:
     	while( ! ifs.eof() )
     	{
     		std::string line;
-    		getline ( ifs, line );  //ler linha
-
-    		std::cout << "linha lida: "<< line<< "\n";    		
+    		getline ( ifs, line );  //ler linha 		
     		m_maze.push_back( line ); //insere string lida no vector
        	}
 
@@ -127,35 +141,80 @@ public:
 	 */
 	bool is_outside( const Position& pos )
 	{
+		if( not(pos.x >= 0 and pos.x < m_nrow) and not(pos.y >= 0 and pos.y < m_ncol)  )
+		{
+			std::cout << "is_outside(): Erro. Posição inválida: coordenada(s) fora do intervalo.";
+			return false;
+		}
+		
 		return ( m_maze[pos.x][pos.y] == m_map.out );
 	}
 
-	bool is_blocked( const Position& pos, const Direction& dir )
+	/*! 
+	 * @brief verifica se uma direção, a partir de determinada posição está, está bloqueada 
+	 * @param pos posição em foco da análise
+	 * @param dir direção a ser analisada
+	 * @return "true" se estiver a direção bloqueada, "false" caso contrário
+	 */
+	bool is_blocked( const Position& pos, const int& dir )
 	{
-		/*todo*/
-		return false;
+		switch( dir ) 
+		{
+			case Direction::NORTH:
+				return ( m_maze[pos.x-1][pos.y] == m_map.wall );
+
+			case Direction::SOUTH:
+				return ( m_maze[pos.x+1][pos.y] == m_map.wall );
+
+			case Direction::WEST: 
+				return ( m_maze[pos.x][pos.y-1] == m_map.wall );
+
+		  	case Direction::EAST: 
+		  		return ( m_maze[pos.x][pos.y+1] == m_map.wall );
+
+		  	default:
+		  		return false;
+		}
 	}
 
-	/*! marca posição como visitada */
+	/*!
+	 * @brief marca posição como visitada
+	 * @param pos posição que deve ser marcada
+	 */
 	void mark_cell( const Position& pos )
 	{
+		if( not(pos.x >= 0 and pos.x < m_nrow) and not(pos.y >= 0 and pos.y < m_ncol)  )
+		{
+			std::cout << "mark_cell(): Erro. Posição inválida: coordenada(s) fora do intervalo.";
+			return;
+		}
+
 		m_maze[pos.x][pos.y] = m_map.marker;
 	}
 
-	/*! desmarca visita de uma posição */
+	/*!
+	 * @brief desmarca visita de uma posição
+	 * @param pos posição que deve ser desmarcada
+	 */
 	void unmark_cell( const Position& pos )
 	{
 		if( is_marked(pos) )
 			m_maze[pos.x][pos.y] = m_map.way;
 	}
 
-	/*! verifica se posição está marcada como visitada */
+	/*! 
+	 * @brief verifica se posição está marcada como visitada
+	 * @param posição que está sendo analisada
+	 * @return "true" se a posição está marcada, "false" caso contrário
+	 */
 	bool is_marked(const Position& pos)
 	{
 		return ( m_maze[pos.x][pos.y] == m_map.marker );
 	}
 
-	/*! mostra na tela situação atual do labirinto */
+	/*!
+	 * @brief mostra na tela situação atual do labirinto
+	 */
 	void render( void )
 	{
 		std::cout << "\t\t A-Mazing!\n";
@@ -192,11 +251,27 @@ int main(int argc, char const *argv[])
 
 	Maze::Position pos_i = labirinto.get_start_position();
 
-	std::cout << "Posição inicial do ator: (" << pos_i.x << ", " << pos_i.y << ")\n";
-
 	/* asserts */
 	assert( pos_i.x == 6 );
 	assert( pos_i.y == 7 );
+
+	Maze::Position pos_test (14, 14);
+	assert(not labirinto.is_outside( pos_test )); //ok isn't outside
+
+	pos_test.set(14, 6);
+	assert(labirinto.is_outside( pos_test )); //ok is outside
+
+	pos_test.set(13, 3);
+	assert( labirinto.is_blocked(pos_test, Maze::Direction::WEST) );
+	assert( labirinto.is_blocked(pos_test, Maze::Direction::SOUTH) );
+	assert(not labirinto.is_blocked(pos_test, Maze::Direction::EAST));
+	assert(not labirinto.is_blocked(pos_test, Maze::Direction::NORTH));
+
+	labirinto.mark_cell( pos_test ); //marcar posicao 13, 3
+	assert( labirinto.is_marked(pos_test) ); //esta marcada?
+
+	labirinto.unmark_cell( pos_test ); //desmarcar posicao 13, 3
+	assert(not labirinto.is_marked(pos_test) ); //nao esta marcada?
 
 	return 0;
 }
