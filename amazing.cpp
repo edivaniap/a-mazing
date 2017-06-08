@@ -43,15 +43,6 @@ public:
 		EAST = 3   //<! ( 0, 1)
 	};
 
-	/*! estrutura de uma direção 
-	static struct Direction
-	{
-		Position north(0, 1);
-		Position south(0,-1);
-		Position west(-1,0);
-		Position east( 1,0);
-	};*/
-
 	/*! estrutura que vai definir o significado de cada caracter no mapa/labirinto */
 	struct Map
 	{
@@ -67,7 +58,6 @@ private:
 	std::vector< std::string > m_maze; /*<! matriz labirinto */ 
 	size_t m_nrow; /*<! número de linhas do labirinto */
 	size_t m_ncol; /*<! número de colunas do labirinto */
-	Position m_initial; /*<! número de linhas do labirinto */ /////////TALVEZ NAO SEJA NECESSÁRIO
 	Map m_map; /*<! legenda de caracteres */
 
 public:
@@ -75,7 +65,6 @@ public:
 	{
 		m_nrow = 0;
 		m_ncol = 0;
-		m_initial.set(0, 0);
 	}
 
 	/*! 
@@ -86,7 +75,7 @@ public:
 	bool fill( std::string filename )
 	{
 		std::ifstream ifs;
-
+		system("clear");
 	    std::cout << "\t>>> Preparando para ler [" << filename << "]...\n";
 	    std::cout << "\t--------------------------------------------------\n";
 
@@ -113,6 +102,11 @@ public:
 
        	m_maze.erase( m_maze.begin() ); //retirar 1ª linha que está sendo lida em branco
 
+       	while( m_maze.back() == "" )
+       	{
+       		m_maze.pop_back(); //retirar ultima linha se estiver em branco
+       	}
+
        	m_nrow = m_maze.size();
        	m_ncol = m_maze.back().size(); //coluna é igual ao numero de caracteres na ultima string do maze
 
@@ -126,6 +120,8 @@ public:
 	 */
 	Position get_start_position( void )
 	{
+		Position m_initial;
+
 		for( auto i = 0u; i < m_nrow; i++)
 			for( auto j = 0u; j < m_ncol; j++)
 				if( m_maze[i][j] == m_map.actor )
@@ -161,16 +157,20 @@ public:
 		switch( dir ) 
 		{
 			case Direction::NORTH:
-				return ( m_maze[pos.x-1][pos.y] == m_map.wall );
+				return ( m_maze[pos.x-1][pos.y] == m_map.wall
+					or m_maze[pos.x-1][pos.y] == m_map.marker );
 
 			case Direction::SOUTH:
-				return ( m_maze[pos.x+1][pos.y] == m_map.wall );
+				return ( m_maze[pos.x+1][pos.y] == m_map.wall
+					or m_maze[pos.x+1][pos.y] == m_map.marker );
 
 			case Direction::WEST: 
-				return ( m_maze[pos.x][pos.y-1] == m_map.wall );
+				return ( m_maze[pos.x][pos.y-1] == m_map.wall
+					or m_maze[pos.x][pos.y-1] == m_map.marker );
 
 		  	case Direction::EAST: 
-		  		return ( m_maze[pos.x][pos.y+1] == m_map.wall );
+		  		return ( m_maze[pos.x][pos.y+1] == m_map.wall
+		  				or m_maze[pos.x][pos.y+1] == m_map.marker );
 
 		  	default:
 		  		return false;
@@ -217,6 +217,7 @@ public:
 	 */
 	void render( void )
 	{
+		//system("clear");
 		std::cout << "\t\t A-Mazing!\n";
 		std::cout << "\t -------------------------\n\n";
 
@@ -231,6 +232,75 @@ public:
 
 		for( auto i = 0u; i < m_nrow; i++)
 	            std::cout << "\t\t" << m_maze[i] << std::endl;
+	}
+
+	Position adjacent_position( Position pos, int dir )
+	{
+		Position result;
+
+		switch( dir ) 
+		{
+			case Direction::NORTH:
+				result.set(pos.x-1, pos.y);
+				break;
+				
+			case Direction::SOUTH:
+				result.set(pos.x+1, pos.y);
+				break;
+
+			case Direction::WEST: 
+				result.set(pos.x, pos.y-1);
+				break;
+				
+		  	case Direction::EAST: 
+				result.set(pos.x, pos.y+1);
+				break;
+		}
+
+		return result;
+	}
+
+	void solve() 
+	{
+		if( find_path( get_start_position() ) )
+			std::cout << "\t>>> Labirinto resolvido!\n";
+		else 
+			std::cout << "\t>>> Labirinto sem saída!\n"; 
+	}
+
+	/*! backintrack function */
+	bool find_path( Position start )
+	{
+		if( is_outside(start) )
+			return true;
+		if( is_marked(start) )
+			return false;
+
+		mark_cell(start);
+		
+
+		std::cin.ignore(); //esperar enter
+		system("clear"); //limpar tela
+		render();
+		std::cout << "\t\n>>> ENTER PARA PRÓXIMO PASSO\n";
+
+		for (int dir = Direction::NORTH; dir <=  Direction::EAST; ++dir)
+		{
+			if( not is_blocked(start, dir) )
+			{
+				if( find_path( adjacent_position(start, dir) ))
+					return true;
+			}
+		}
+
+		unmark_cell(start);
+
+		std::cin.ignore(); //esperar enter
+		system("clear"); //limpar tela
+		render();
+		std::cout << "\t\n>>> ENTER PARA PRÓXIMO PASSO\n";
+
+		return false;
 	}
 };
 
@@ -248,30 +318,10 @@ int main(int argc, char const *argv[])
 	}
 
 	labirinto.render();
-
-	Maze::Position pos_i = labirinto.get_start_position();
-
-	/* asserts */
-	assert( pos_i.x == 6 );
-	assert( pos_i.y == 7 );
-
-	Maze::Position pos_test (14, 14);
-	assert(not labirinto.is_outside( pos_test )); //ok isn't outside
-
-	pos_test.set(14, 6);
-	assert(labirinto.is_outside( pos_test )); //ok is outside
-
-	pos_test.set(13, 3);
-	assert( labirinto.is_blocked(pos_test, Maze::Direction::WEST) );
-	assert( labirinto.is_blocked(pos_test, Maze::Direction::SOUTH) );
-	assert(not labirinto.is_blocked(pos_test, Maze::Direction::EAST));
-	assert(not labirinto.is_blocked(pos_test, Maze::Direction::NORTH));
-
-	labirinto.mark_cell( pos_test ); //marcar posicao 13, 3
-	assert( labirinto.is_marked(pos_test) ); //esta marcada?
-
-	labirinto.unmark_cell( pos_test ); //desmarcar posicao 13, 3
-	assert(not labirinto.is_marked(pos_test) ); //nao esta marcada?
+	std::cout << "\t\n>>> ENTER PARA INCIAR\n";
+	
+	// --- SOLVING
+	labirinto.solve();
 
 	return 0;
 }
