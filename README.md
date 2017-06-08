@@ -5,8 +5,14 @@ O mapa do labirinto deve ser informado através de um arquivo pelo argumento do 
 
 
 **Modelo do arquivo de entrada:**  
-1. caracter que define a parede, ator, saída e marcador, respectivamente sem espa;  
-2. labirinto.
+O arquivo que descreve o labirinto deve conter na sua primeira linha, respesctivamente e sem espaços entre eles, caracteres que define:  
+
+1. caracter que define a parede
+2. ator
+3. saída
+4. marcador
+
+Abaixo disso deve vir o mapa do labirinto formado com os caracteres de acordo com os definidos acima.
 
 
 **Backtracking**  
@@ -26,21 +32,21 @@ Uma solução parcialmente detectada é completada passo a passo até encontrar 
 - [X] *unmark_cell* : Desmarca visita de uma posição
 - [X] *is_marked* : Verifica se posição está marcada
 - [X] *render* : Mostra na tela situação atual do labirinto
-
-**Main**
-
-- [ ] *solve_maze* : Função que utilizará backtraking para resolver o labirinto
-- [X] Testes com assert
+- [X] *find_path* : Tenta encontrar o caminho com backtracking recursivo
+- [X] *solve* : Resolve o labirinto
+- [X] *adjacent_position* : Retorna uma posição adjacente em determinada direção
+- [X] Testes
 
 	
-# How to build
+# Compiling and runing
 
-	`$ ...`
+	`$ g++ -Wall -std=c++11 amazing.cpp -o amazing`
+	`$ ./amazing <nome_arquivo_com_maze>`
 
 
 # Git repository
 
-[**projetos.imd.ufrn.br/edivaniap/amazing**](http://projetos.imd.ufrn.br/edivaniap/amazing)
+[**projetos.imd.ufrn.br/edivaniap/amazing**](http://projetos.imd.ufrn.br/edivaniap/amazing)  
 [**github.com/vaniati/a-mazing**](https://github.com/vaniati/a-mazing)
 
 
