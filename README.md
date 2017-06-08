@@ -7,7 +7,7 @@ O mapa do labirinto deve ser informado através de um arquivo pelo argumento do 
 **Modelo do arquivo de entrada:**  
 O arquivo que descreve o labirinto deve conter na sua primeira linha, respesctivamente e sem espaços entre eles, caracteres que define:  
 
-1. caracter que define a parede
+1. parede
 2. ator
 3. saída
 4. marcador
@@ -40,8 +40,8 @@ Uma solução parcialmente detectada é completada passo a passo até encontrar 
 	
 # Compiling and runing
 
-	`$ g++ -Wall -std=c++11 amazing.cpp -o amazing`
-	`$ ./amazing <nome_arquivo_com_maze>`
+	`$ g++ -Wall -std=c++11 src/main.cpp -o bin/amazing`
+	`$ ./bin/amazing mazes/<nome_arquivo_com_maze>`
 
 
 # Git repository
